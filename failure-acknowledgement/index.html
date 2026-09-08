@@ -425,7 +425,6 @@
   <div class="switcher">
     <span class="lbl myk-overline">Flow</span>
     <div class="chip active" onclick="show('failed', this)">Not yet acknowledged</div>
-    <div class="chip" onclick="show('ackedbyothers', this)">A colleague acknowledged</div>
     <div class="chip" onclick="show('submitting', this)">Submitting</div>
     <div class="chip" onclick="show('acknowledged', this)">You acknowledged</div>
     <div class="chip" onclick="show('loading', this)">Loading</div>
@@ -477,10 +476,6 @@
           <span class="pill err">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
             Returned
-          </span>
-          <span class="pill ok" id="pill-acked" hidden>
-            <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
-            Acknowledged
           </span>
         </div>
         <p class="amount-note myk-body2">
@@ -567,34 +562,11 @@
               <p class="m myk-subtitle1">Sep 5, 2026 · 6:04 AM CDT — <span class="gap">3 days after the customer paid</span></p>
             </div>
           </div>
-          <div class="tl-row" id="tl-pending">
+          <div class="tl-row">
             <div class="tl-rail"><span class="tl-dot now" aria-hidden="true"></span></div>
             <div class="tl-body">
               <p class="t myk-body2">Waiting for someone at the store to acknowledge</p>
               <p class="m myk-subtitle1">Email sent to 3 payment contacts on Sep 5, 2026 · 6:09 AM CDT</p>
-            </div>
-          </div>
-          <div class="tl-row" id="tl-acked" hidden>
-            <div class="tl-rail"><span class="tl-dot ok" aria-hidden="true"></span></div>
-            <div class="tl-body">
-              <p class="t myk-body2">Acknowledged by Priya Raghunathan</p>
-              <p class="m myk-subtitle1">Sep 5, 2026 · 7:02 AM CDT — other contacts can still acknowledge</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="ack-roster" hidden>
-        <div class="section-divider"></div>
-        <div class="dialog-section" style="display:flex; flex-direction:column; gap:12px;">
-          <p class="myk-overline" style="color: var(--text-secondary, #535862);">Acknowledged by</p>
-          <div class="roster">
-            <div class="ack-person">
-              <div class="avatar" aria-hidden="true">PR</div>
-              <div class="ap">
-                <p class="t myk-body2">Priya Raghunathan</p>
-                <p class="m myk-subtitle1">Service Advisor · Sep 5, 2026 · 7:02 AM CDT</p>
-              </div>
             </div>
           </div>
         </div>
@@ -615,16 +587,10 @@
         </div>
       </div>
 
-      <div class="footstrip" id="strip-pending">
+      <div class="footstrip">
         <span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>
         <p class="myk-body2">If nobody acknowledges by <b>Sep 6, 2026 · 6:04 AM CDT</b>, we remind the Service
           Manager, <b>Ravi Anand</b>.</p>
-      </div>
-
-      <div class="footstrip" id="strip-acked" hidden>
-        <span class="material-symbols-outlined" aria-hidden="true">notifications_off</span>
-        <p class="myk-body2">Reminders stopped when <b>Priya Raghunathan</b> acknowledged this. You can still add
-          your own acknowledgement below.</p>
       </div>
 
       <div class="dialog-actions">
@@ -804,11 +770,10 @@
   })();
 
   // Each entry maps a state from the flow diagram onto one card plus the
-  // sub-elements that vary within it. 'ackedbyothers', 'submitting' and
-  // 'submitfailed' are all NeedsAck — same card, different conditions.
+  // sub-elements that vary within it. 'submitting' and 'submitfailed' are
+  // both NeedsAck — same card, different conditions.
   var VIEW = {
     failed:        { card: 'failed' },
-    ackedbyothers: { card: 'failed', acked: true },
     submitting:    { card: 'failed', submitting: true },
     acknowledged:  { card: 'acknowledged' },
     loading:       { card: 'loading' },
@@ -825,14 +790,6 @@
 
     CARDS.forEach(function (c) {
       document.getElementById('s-' + c).hidden = (c !== v.card);
-    });
-
-    // NeedsAck sub-conditions.
-    ['pill-acked', 'tl-acked', 'ack-roster', 'strip-acked'].forEach(function (id) {
-      document.getElementById(id).hidden = !v.acked;
-    });
-    ['tl-pending', 'strip-pending'].forEach(function (id) {
-      document.getElementById(id).hidden = !!v.acked;
     });
 
     // A failed submit re-enables the button — the toast carries the error.
