@@ -201,19 +201,15 @@
 
   /* ── Banner ───────────────────────────────────────────────────────────── */
   .banner {
-    display: flex; flex-direction: column; gap: 12px;
+    display: flex; gap: 12px; align-items: flex-start;
     padding: 12px 24px;
     background: var(--badge-err-bg, #FEF3F2);
     color: var(--badge-err-fg, #B42318);
     border-bottom: 1px solid var(--border, #E9EAEB);
   }
-  .banner-msg { display: flex; gap: 12px; align-items: flex-start; }
   .banner .material-symbols-outlined { font-size: 24px; flex: 0 0 auto; margin-top: 1px; }
   .banner .btxt { color: var(--text-primary, #1A1A2E); }
   .banner .btxt .sub { color: var(--text-secondary, #535862); margin-top: 2px; }
-  /* Indented to line up under the message text, not the icon (24px icon + 12px gap). */
-  .banner-actions { margin-left: 36px; }
-  .banner-actions .mk-button { height: 36px; }
 
   .dialog-section { padding: var(--space-4, 16px) var(--space-5, 24px); }
   .section-divider { height: 1px; background: var(--border, #E9EAEB); }
@@ -261,13 +257,6 @@
     padding: 1px 6px; border-radius: 9px;
   }
 
-  /* ── Guidance ─────────────────────────────────────────────────────────── */
-  .guidance { display: flex; flex-direction: column; gap: 10px; }
-  .guidance .row { display: flex; gap: 10px; align-items: flex-start; }
-  .guidance .material-symbols-outlined { font-size: 16px; flex: 0 0 auto; margin-top: 1px; color: var(--text-secondary, #535862); }
-  .guidance .row p { color: var(--text-secondary, #535862); }
-  .guidance .row p b { color: var(--text-primary, #1A1A2E); font-weight: 700; }
-
   .footstrip {
     display: flex; align-items: flex-start; gap: 8px;
     padding: 12px 24px;
@@ -284,9 +273,7 @@
     border-top: 1px solid var(--border, #E9EAEB);
     display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap;
   }
-  /* Base + size modifier, per ui-components button spec. This screen's
-     Acknowledge/Try-again is the single most important action on the page,
-     so it takes the large (48px) size rather than the 30px default. */
+  /* Base + size modifier, per ui-components button spec. */
   .mk-button {
     height: 48px; padding: 0 20px; border-radius: var(--radius-lg, 8px);
     font-family: 'Lato', sans-serif;
@@ -303,6 +290,8 @@
   .primary-mk-button:hover { background: var(--brand-hover, #02679B); border-color: var(--brand-hover, #02679B); }
   .mk-button[disabled] { opacity: 0.5; pointer-events: none; cursor: not-allowed; }
   .mk-button .material-symbols-outlined { font-size: 20px; }
+  /* Requested override for this screen's Acknowledge action. */
+  .ack-btn-sm { height: 36px; }
 
   /* ── Submitting spinner ───────────────────────────────────────────────── */
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -371,8 +360,6 @@
     .info-grid { grid-template-columns: 1fr; }
     .dialog-actions { flex-direction: column-reverse; align-items: stretch; }
     .dialog-actions .mk-button { width: 100%; }
-    .banner-actions { width: 100%; margin-left: 0; }
-    .banner-actions .mk-button { width: 100%; }
     .whoami .txt { display: none; }
   }
 </style>
@@ -413,25 +400,13 @@
     <!-- ══ NEEDS ACKNOWLEDGEMENT ═══════════════════════════════════════ -->
     <section class="card" id="s-failed">
       <div class="banner">
-        <div class="banner-msg">
-          <span class="material-symbols-outlined" aria-hidden="true">error</span>
-          <div class="btxt">
-            <p class="myk-h6">ACH Payment Failed</p>
-            <p class="sub myk-body2">
-              This account didn't have enough funds to cover the payment. Please acknowledge that you've seen this
-              failure and will take the necessary action.
-            </p>
-          </div>
-        </div>
-        <div class="banner-actions">
-          <button class="mk-button primary-mk-button" id="btn-ack" type="button" onclick="submitAck()">
-            <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
-            Acknowledge
-          </button>
-          <button class="mk-button primary-mk-button" id="btn-submitting" type="button" disabled hidden>
-            <span class="spinner" aria-hidden="true"></span>
-            Acknowledging…
-          </button>
+        <span class="material-symbols-outlined" aria-hidden="true">error</span>
+        <div class="btxt">
+          <p class="myk-h6">ACH Payment Failed</p>
+          <p class="sub myk-body2">
+            This account didn't have enough funds to cover the payment. Please acknowledge that you've seen this
+            failure and will take the necessary action.
+          </p>
         </div>
       </div>
 
@@ -468,21 +443,6 @@
         </div>
       </div>
 
-      <div class="section-divider"></div>
-
-      <div class="dialog-section guidance">
-        <div class="row">
-          <span class="material-symbols-outlined" aria-hidden="true">directions_car</span>
-          <p class="myk-body2"><b>If the vehicle has already left,</b> call the customer today. Returns arrive days
-            after the payment looked successful, so the car is often gone before you hear about it.</p>
-        </div>
-        <div class="row">
-          <span class="material-symbols-outlined" aria-hidden="true">credit_card</span>
-          <p class="myk-body2"><b>To collect again,</b> send a new payment request or take a card. Pay by Bank can be
-            retried once the customer confirms the funds are there.</p>
-        </div>
-      </div>
-
       <div class="footstrip">
         <span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>
         <p class="myk-body2">If nobody acknowledges by <b>Sep 6, 2026 · 6:04 AM CDT</b>, we remind the Service
@@ -490,11 +450,11 @@
       </div>
 
       <div class="dialog-actions">
-        <button class="mk-button primary-mk-button" id="btn-ack-bottom" type="button" onclick="submitAck()">
+        <button class="mk-button primary-mk-button ack-btn-sm" id="btn-ack" type="button" onclick="submitAck()">
           <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
           Acknowledge
         </button>
-        <button class="mk-button primary-mk-button" id="btn-submitting-bottom" type="button" disabled hidden>
+        <button class="mk-button primary-mk-button ack-btn-sm" id="btn-submitting" type="button" disabled hidden>
           <span class="spinner" aria-hidden="true"></span>
           Acknowledging…
         </button>
@@ -551,15 +511,12 @@
 
     <!-- ══ LOADING SKELETON ════════════════════════════════════════════ -->
     <section class="card" id="s-loading" hidden aria-busy="true" aria-label="Loading payment details">
-      <div class="dialog-section" style="display:flex; flex-direction:column; gap:12px;">
-        <div style="display:flex; gap:12px; align-items:flex-start;">
-          <div class="skeleton" style="width:24px; height:24px; border-radius:50%; flex:0 0 auto;"></div>
-          <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
-            <div class="skeleton" style="width:58%; height:14px;"></div>
-            <div class="skeleton" style="width:90%; height:12px;"></div>
-          </div>
+      <div class="dialog-section" style="display:flex; gap:12px; align-items:flex-start;">
+        <div class="skeleton" style="width:24px; height:24px; border-radius:50%; flex:0 0 auto;"></div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+          <div class="skeleton" style="width:58%; height:14px;"></div>
+          <div class="skeleton" style="width:90%; height:12px;"></div>
         </div>
-        <div class="skeleton" style="width:120px; height:36px; border-radius:8px; margin-left:36px;"></div>
       </div>
       <div class="section-divider"></div>
       <div class="dialog-section" style="display:flex; flex-direction:column; gap:10px;">
@@ -576,7 +533,7 @@
       </div>
       <div class="section-divider"></div>
       <div class="dialog-actions">
-        <div class="skeleton" style="width:160px; height:48px; border-radius:8px;"></div>
+        <div class="skeleton" style="width:160px; height:36px; border-radius:8px;"></div>
       </div>
     </section>
 
@@ -669,14 +626,9 @@
       document.getElementById('s-' + c).hidden = (c !== v.card);
     });
 
-    // A failed submit re-enables the buttons — the toast carries the error.
-    // Banner and bottom Acknowledge buttons mirror each other exactly.
-    ['btn-ack', 'btn-ack-bottom'].forEach(function (id) {
-      document.getElementById(id).hidden = !!v.submitting;
-    });
-    ['btn-submitting', 'btn-submitting-bottom'].forEach(function (id) {
-      document.getElementById(id).hidden = !v.submitting;
-    });
+    // A failed submit re-enables the button — the toast carries the error.
+    document.getElementById('btn-ack').hidden = !!v.submitting;
+    document.getElementById('btn-submitting').hidden = !v.submitting;
     document.getElementById('toast-submitfail').hidden = !v.toast;
 
     var chips = document.querySelectorAll('.switcher .chip');
