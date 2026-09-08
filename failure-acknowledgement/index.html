@@ -215,7 +215,8 @@
   .section-divider { height: 1px; background: var(--border, #E9EAEB); }
 
   /* ── Amount ───────────────────────────────────────────────────────────── */
-  .amount-block { display: flex; flex-direction: column; gap: 4px; }
+  .amount-block { display: flex; flex-direction: column; gap: 4px; padding-bottom: 0; }
+  .dialog-label { color: var(--text-secondary, #535862); }
   .amount-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .failed-amount {
     font-size: 2rem; line-height: 2.5rem; font-weight: 700;
@@ -411,6 +412,7 @@
       </div>
 
       <div class="dialog-section amount-block">
+        <p class="dialog-label myk-subtitle1">Pay by Bank (ACH)</p>
         <div class="amount-row">
           <p class="failed-amount">$2,184.60</p>
           <span class="pill err">
