@@ -24,6 +24,12 @@ Open a screen locally:
 open failure-acknowledgement/index.html
 ```
 
+## Screens
+
+| Screen | Description | Status |
+|---|---|---|
+| [`failure-acknowledgement`](failure-acknowledgement/index.html) | ACH payment failure — store staff acknowledge a returned/failed payment so it's on record, with states for not-yet-acknowledged, submitting, acknowledged, and various error/loading cases. | In review ([#1](https://github.com/jennlatran/payment-ach/pull/1)) |
+
 ## Workflow: one PR per screen
 
 `main` is protected — every screen is added via its own pull request, not
