@@ -1,35 +1,862 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Failure Acknowledgement — Payment ACH</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      max-width: 640px;
-      margin: 4rem auto;
-      padding: 0 1.5rem;
-      color: #1a1a1a;
-      line-height: 1.6;
-    }
-    .placeholder-flag {
-      background: #fff8e1;
-      border-left: 3px solid #e6a817;
-      padding: 0.75rem 1rem;
-      margin-bottom: 2rem;
-      font-size: 0.9rem;
-    }
-    h1 { font-size: 1.5rem; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACH Failure Acknowledgement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+<style>
+  /* ── Tokens ──────────────────────────────────────────────────────────────
+     Core myKaarma tokens only (ui-tokens skill's dual-mode "Complete Token
+     Override Block" naming) — no custom --pay-*/--skel-* layer. Forced to
+     light mode for this pass; the #shell.dark block stays in place so a
+     future toggle is a JS change, not a CSS rewrite. */
+
+  #shell.light {
+    --bg-page:        #F5F7FA;
+    --bg-card:        #FFFFFF;
+    --bg-base-1:      #FBFBFB;
+    --bg-base-2:      #D8D8D8;
+    --bg-base-3:      #B8B8B8;
+    --border:         #E9EAEB;
+    --text-primary:   #1A1A2E;
+    --text-secondary: #535862;
+    --text-muted:     #B8B8B8;
+    --brand:          #0377B3;
+    --brand-hover:    #02679B;
+    --btn-sec-color:  #0377B3;
+    --avatar-bg:      #D3E4F1;
+    --avatar-text:    #0377B3;
+    --chip-bg:            #FFFFFF;
+    --chip-border:        #D8D8D8;
+    --chip-text:          #535862;
+    --chip-active-bg:     #D3E4F1;
+    --chip-active-border: #0377B3;
+    --chip-active-text:   #0377B3;
+    --row-hover:      #F0F6FB;
+    --focus-ring:     rgba(3,119,179,0.3);
+
+    --badge-err-fg:  #B42318; --badge-err-bg:  #FEF3F2;
+    --badge-ok-fg:   #027A48; --badge-ok-bg:   #ECFDF3;
+    --badge-warn-fg: #ED6D22; --badge-warn-bg: #FFE0B6;
+    --badge-info-fg: #0377B3; --badge-info-bg: #D3E4F1;
+  }
+
+  #shell.dark {
+    --bg-page:        #0F1117;
+    --bg-card:        #232839;
+    --bg-base-1:      #1A1F2E;
+    --bg-base-2:      #232839;
+    --bg-base-3:      #2E3347;
+    --border:         #2E3347;
+    --text-primary:   #F0F4F8;
+    --text-secondary: #8B95A6;
+    --text-muted:     #4A5568;
+    --brand:          #3B9DD4;
+    --brand-hover:    #55B0E2;
+    --btn-sec-color:  #7EB8D9;
+    --avatar-bg:      rgba(59,157,212,0.2);
+    --avatar-text:    #3B9DD4;
+    --chip-bg:            transparent;
+    --chip-border:        #3B4560;
+    --chip-text:          #8B95A6;
+    --chip-active-bg:     rgba(59,157,212,0.18);
+    --chip-active-border: #3B9DD4;
+    --chip-active-text:   #3B9DD4;
+    --row-hover:      rgba(255,255,255,0.04);
+    --focus-ring:     rgba(59,157,212,0.4);
+
+    --badge-err-fg:  #F97066; --badge-err-bg:  #1C0A09;
+    --badge-ok-fg:   #32D583; --badge-ok-bg:   #052E16;
+    --badge-warn-fg: #FD853A; --badge-warn-bg: #1C0F04;
+    --badge-info-fg: #36ADEF; --badge-info-bg: #031527;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  body {
+    margin: 0;
+    background: #F5F7FA;
+    font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  #shell {
+    min-height: 100vh;
+    background: var(--bg-page, #F5F7FA);
+    font-family: 'Lato', sans-serif;
+    color: var(--text-primary, #1A1A2E);
+  }
+
+  /* ── myKaarma typography classes ──────────────────────────────────────── */
+  .myk-h3 { font-size: 1.25rem;  line-height: 1.75rem; font-weight: 700; margin: 0; }
+  .myk-h5 { font-size: 1rem;     line-height: 1.5rem;  font-weight: 700; margin: 0; }
+  .myk-h6 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 700; margin: 0; }
+  .myk-body1 { font-size: 1rem;     line-height: 1.5rem;  font-weight: 400; margin: 0; }
+  .myk-body2 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 400; margin: 0; }
+  .myk-subtitle1 { font-size: 0.75rem; line-height: 1rem; font-weight: 400; margin: 0; }
+  .myk-overline { font-size: 0.75rem; line-height: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin: 0; }
+
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal; font-style: normal;
+    line-height: 1; letter-spacing: normal; text-transform: none;
+    display: inline-block; white-space: nowrap; word-wrap: normal;
+    direction: ltr; -webkit-font-feature-settings: 'liga'; font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* ── Mockup-only state switcher (not part of the shipped component) ───── */
+  .switcher {
+    background: var(--bg-card, #fff);
+    border-bottom: 1px solid var(--border, #E9EAEB);
+    padding: 12px 16px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  }
+  .switcher .lbl { color: var(--text-secondary, #535862); margin-right: 4px; }
+  /* Chips are <div>, not <button> — the widget host injects button styles
+     that override custom CSS in light mode. */
+  .chip {
+    height: 28px; padding: 0 14px; border-radius: var(--radius-sm, 4px);
+    font-family: 'Lato', sans-serif;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; user-select: none;
+    background: var(--chip-bg, #fff);
+    border: 1px solid var(--chip-border, #D8D8D8);
+    color: var(--chip-text, #535862);
+    transition: all 150ms ease-in-out;
+  }
+  .chip:hover { background: var(--row-hover, #F0F6FB); }
+  .chip.active {
+    background: var(--chip-active-bg, #D3E4F1);
+    border-color: var(--chip-active-border, #0377B3);
+    color: var(--chip-active-text, #0377B3);
+  }
+
+  /* ── Page chrome ──────────────────────────────────────────────────────── */
+  .topbar {
+    height: 52px;
+    background: var(--bg-card, #fff);
+    border-bottom: 1px solid var(--border, #E9EAEB);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; gap: 12px;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  /* Logo mark is always #ED6D22 in both modes — Logo Rule. */
+  .brand-mark {
+    background: #ED6D22; border-radius: 6px; width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  }
+  .brand-mark span { color: #fff; font-size: 11px; font-weight: 700; }
+  .brand-word { color: var(--brand, #0377B3); font-size: 13px; font-weight: 700; }
+
+  .whoami { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .whoami .txt { text-align: right; min-width: 0; }
+  .whoami .name {
+    color: var(--text-primary, #1A1A2E); font-weight: 700; font-size: 0.875rem;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .whoami .org {
+    color: var(--text-secondary, #535862); font-size: 0.75rem;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%; flex: 0 0 auto;
+    background: var(--avatar-bg, #D3E4F1); color: var(--avatar-text, #0377B3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+
+  main { padding: 24px 16px 48px; display: flex; justify-content: center; }
+  .card {
+    width: 100%; max-width: 640px;
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border, #E9EAEB);
+    border-radius: var(--radius-lg, 8px);
+    overflow: hidden;
+  }
+
+  /* ── Dealer scope strip ───────────────────────────────────────────────
+     Dealer name lives here, not in the info grid: a multi-dealer user needs
+     to know which store this belongs to, and a single-dealer user reads it
+     as ambient context rather than a redundant labelled field. */
+  .scope {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 24px;
+    background: var(--bg-base-1, #FBFBFB);
+    border-bottom: 1px solid var(--border, #E9EAEB);
+    color: var(--text-secondary, #535862);
+    min-width: 0;
+  }
+  .scope .material-symbols-outlined { font-size: 16px; flex: 0 0 auto; }
+  .scope .dealer {
+    color: var(--text-primary, #1A1A2E); font-weight: 700;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ── Banner ───────────────────────────────────────────────────────────── */
+  .banner {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 24px;
+    background: var(--badge-err-bg, #FEF3F2);
+    color: var(--badge-err-fg, #B42318);
+    border-bottom: 1px solid var(--border, #E9EAEB);
+  }
+  .banner .material-symbols-outlined { font-size: 24px; flex: 0 0 auto; margin-top: 1px; }
+  .banner .btxt { color: var(--text-primary, #1A1A2E); }
+  .banner .btxt .sub { color: var(--text-secondary, #535862); margin-top: 2px; }
+
+  .dialog-section { padding: var(--space-4, 16px) var(--space-5, 24px); }
+  .section-divider { height: 1px; background: var(--border, #E9EAEB); }
+
+  /* ── Amount ───────────────────────────────────────────────────────────── */
+  .amount-block { display: flex; flex-direction: column; gap: 4px; }
+  .dialog-label { color: var(--text-secondary, #535862); }
+  .amount-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .failed-amount {
+    font-size: 2rem; line-height: 2.5rem; font-weight: 700;
+    color: var(--text-primary, #1A1A2E);
+    font-variant-numeric: tabular-nums;
+  }
+  .amount-note { color: var(--text-secondary, #535862); }
+  .amount-note b { color: var(--text-primary, #1A1A2E); font-weight: 700; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 22px; padding: 0 9px; border-radius: 11px;
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;
+  }
+  .pill .material-symbols-outlined { font-size: 16px; }
+  .pill.err  { background: var(--badge-err-bg, #FEF3F2);  color: var(--badge-err-fg, #B42318); }
+  .pill.ok   { background: var(--badge-ok-bg, #ECFDF3);   color: var(--badge-ok-fg, #027A48); }
+
+  /* ── Info grid ────────────────────────────────────────────────────────── */
+  .info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; }
+  .info-column { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .info-label { color: var(--text-secondary, #535862); }
+  .info-value {
+    color: var(--text-primary, #1A1A2E); font-weight: 700;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .info-value.ref { display: flex; align-items: center; gap: 6px; font-weight: 400; font-variant-numeric: tabular-nums; }
+  .copy-btn {
+    background: none; border: none; padding: 2px; cursor: pointer; border-radius: var(--radius-sm, 4px);
+    color: var(--text-secondary, #535862); display: inline-flex; align-items: center;
+  }
+  .copy-btn:hover { background: var(--row-hover, #F0F6FB); color: var(--brand, #0377B3); }
+  .copy-btn .material-symbols-outlined { font-size: 16px; }
+
+  /* ── Return reason ────────────────────────────────────────────────────── */
+  .reason {
+    background: var(--bg-base-1, #FBFBFB);
+    border: 1px solid var(--border, #E9EAEB);
+    border-radius: var(--radius-md, 6px); padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .reason .code {
+    color: var(--badge-err-fg, #B42318); font-weight: 700;
+    font-size: 0.875rem; letter-spacing: 0.02em;
+  }
+  .reason p { color: var(--text-primary, #1A1A2E); }
+
+  /* ── Timeline ─────────────────────────────────────────────────────────── */
+  .timeline { display: flex; flex-direction: column; }
+  .tl-row { display: flex; gap: 12px; padding-bottom: 14px; }
+  .tl-row:last-child { padding-bottom: 0; }
+  .tl-rail { flex: 0 0 10px; display: flex; flex-direction: column; align-items: center; }
+  .tl-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; margin-top: 4px;
+    border: 2px solid var(--border, #E9EAEB);
+    background: var(--border, #E9EAEB);
+  }
+  .tl-dot.err { border-color: var(--badge-err-fg, #B42318); background: var(--badge-err-fg, #B42318); }
+  .tl-dot.ok  { border-color: var(--badge-ok-fg, #027A48);  background: var(--badge-ok-fg, #027A48); }
+  .tl-dot.now { border-color: var(--brand, #0377B3); background: var(--bg-card, #fff); }
+  .tl-stem { flex: 1 1 auto; width: 1px; background: var(--border, #E9EAEB); margin-top: 3px; min-height: 10px; }
+  .tl-row:last-child .tl-stem { display: none; }
+  .tl-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .tl-body .t { color: var(--text-primary, #1A1A2E); font-weight: 700; }
+  .tl-body .m { color: var(--text-secondary, #535862); font-variant-numeric: tabular-nums; }
+  .tl-body .gap { color: var(--badge-err-fg, #B42318); font-weight: 700; }
+
+  /* ── Acknowledgement roster ───────────────────────────────────────────
+     Acknowledgement is per-person and the log stays open, so the screen has
+     to show who has already acknowledged without implying it is settled. */
+  .roster { display: flex; flex-direction: column; gap: 12px; }
+  .ack-person { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ack-person .ap { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ack-person .ap .t {
+    color: var(--text-primary, #1A1A2E); font-weight: 700;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .ack-person .ap .m { color: var(--text-secondary, #535862); font-variant-numeric: tabular-nums; }
+  .you-tag {
+    background: var(--badge-info-bg, #D3E4F1); color: var(--badge-info-fg, #0377B3);
+    font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 9px;
+  }
+
+  /* ── Guidance ─────────────────────────────────────────────────────────── */
+  .guidance { display: flex; flex-direction: column; gap: 10px; }
+  .guidance .row { display: flex; gap: 10px; align-items: flex-start; }
+  .guidance .material-symbols-outlined { font-size: 16px; flex: 0 0 auto; margin-top: 1px; color: var(--text-secondary, #535862); }
+  .guidance .row p { color: var(--text-secondary, #535862); }
+  .guidance .row p b { color: var(--text-primary, #1A1A2E); font-weight: 700; }
+
+  .footstrip {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 12px 24px;
+    background: var(--bg-base-1, #FBFBFB);
+    border-top: 1px solid var(--border, #E9EAEB);
+    color: var(--text-secondary, #535862);
+  }
+  .footstrip .material-symbols-outlined { font-size: 16px; flex: 0 0 auto; margin-top: 1px; }
+  .footstrip b { color: var(--text-primary, #1A1A2E); }
+
+  /* ── Buttons ──────────────────────────────────────────────────────────── */
+  .dialog-actions {
+    padding: var(--space-4, 16px) var(--space-5, 24px);
+    border-top: 1px solid var(--border, #E9EAEB);
+    display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  /* Base + size modifier, per ui-components button spec. This screen's
+     Acknowledge/Try-again is the single most important action on the page,
+     so it takes the large (48px) size rather than the 30px default. */
+  .mk-button {
+    height: 48px; padding: 0 20px; border-radius: var(--radius-lg, 8px);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    white-space: nowrap; border: 1px solid transparent;
+    transition: all 150ms ease-in-out;
+  }
+  .primary-mk-button {
+    background: var(--brand, #0377B3);
+    color: #fff;
+    border-color: var(--brand, #0377B3);
+  }
+  .primary-mk-button:hover { background: var(--brand-hover, #02679B); border-color: var(--brand-hover, #02679B); }
+  .mk-button[disabled] { opacity: 0.5; pointer-events: none; cursor: not-allowed; }
+  .mk-button .material-symbols-outlined { font-size: 20px; }
+
+  .ack-hint { color: var(--text-secondary, #535862); margin-right: auto; max-width: 34ch; }
+
+  /* ── Submitting spinner ───────────────────────────────────────────────── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 16px; height: 16px; border-radius: 50%; flex: 0 0 auto;
+    border: 2px solid currentColor; border-top-color: transparent;
+    animation: spin 700ms linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+
+  /* ── Submit-failure toast ─────────────────────────────────────────────── */
+  .toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    z-index: 300; width: calc(100% - 32px); max-width: 420px;
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 14px; border-radius: var(--radius-lg, 8px);
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--badge-err-fg, #B42318);
+    box-shadow: var(--shadow-lg, 0 8px 16px rgba(10,13,18,0.15));
+    color: var(--text-primary, #1A1A2E);
+  }
+  .toast .material-symbols-outlined { font-size: 20px; flex: 0 0 auto; color: var(--badge-err-fg, #B42318); }
+  .toast .tbody { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .toast .retry {
+    background: none; border: none; padding: 0; cursor: pointer;
+    font-family: inherit; font-size: 0.75rem; font-weight: 700; text-align: left;
+    color: var(--brand, #0377B3); align-self: flex-start;
+  }
+
+  :focus-visible {
+    outline: none;
+    border-color: var(--brand, #0377B3);
+    box-shadow: 0 0 0 3px var(--focus-ring, rgba(3,119,179,0.3));
+  }
+
+  /* ── Terminal states ──────────────────────────────────────────────────── */
+  .terminal { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 24px; text-align: center; }
+  .terminal .icon-wrap {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 4px;
+  }
+  .terminal .icon-wrap .material-symbols-outlined { font-size: 24px; }
+  .terminal .sub { color: var(--text-secondary, #535862); max-width: 46ch; }
+  .receipt {
+    width: 100%; margin-top: 8px;
+    background: var(--bg-base-1, #FBFBFB);
+    border: 1px solid var(--border, #E9EAEB);
+    border-radius: var(--radius-md, 6px); padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 6px; text-align: left;
+  }
+  .receipt .r { display: flex; justify-content: space-between; gap: 12px; }
+  .receipt .r span:first-child { color: var(--text-secondary, #535862); font-size: 0.75rem; }
+  .receipt .r span:last-child { color: var(--text-primary, #1A1A2E); font-weight: 700; font-size: 0.75rem; font-variant-numeric: tabular-nums; text-align: right; }
+
+  /* ── Skeleton ─────────────────────────────────────────────────────────── */
+  @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+  .skeleton {
+    border-radius: var(--radius-sm, 4px);
+    background: linear-gradient(90deg, var(--bg-base-2, #D8D8D8) 25%, var(--bg-base-3, #B8B8B8) 50%, var(--bg-base-2, #D8D8D8) 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.5s infinite linear;
+  }
+  @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+  @media (max-width: 767px) {
+    .info-grid { grid-template-columns: 1fr; }
+    .dialog-actions { flex-direction: column-reverse; align-items: stretch; }
+    .dialog-actions .mk-button { width: 100%; }
+    .ack-hint { margin-right: 0; max-width: none; text-align: center; }
+    .whoami .txt { display: none; }
+  }
+</style>
 </head>
 <body>
-  <div class="placeholder-flag">
-    <strong>Placeholder — no design yet.</strong> This folder exists to
-    establish the one-folder-per-screen / one-PR-per-screen convention.
-    Replace this file with the real Failure Acknowledgement prototype.
+<div id="shell" class="light">
+
+  <!-- Mockup-only: state switcher. Not part of the shipped component. -->
+  <div class="switcher">
+    <span class="lbl myk-overline">Flow</span>
+    <div class="chip active" onclick="show('failed', this)">Not yet acknowledged</div>
+    <div class="chip" onclick="show('ackedbyothers', this)">A colleague acknowledged</div>
+    <div class="chip" onclick="show('submitting', this)">Submitting</div>
+    <div class="chip" onclick="show('acknowledged', this)">You acknowledged</div>
+    <div class="chip" onclick="show('loading', this)">Loading</div>
+    <span class="lbl myk-overline" style="margin-left:8px;">Failures</span>
+    <div class="chip" onclick="show('submitfailed', this)">Submit 5xx</div>
+    <div class="chip" onclick="show('forbidden', this)">403</div>
+    <div class="chip" onclick="show('notfound', this)">404</div>
+    <div class="chip" onclick="show('loaderror', this)">Load 5xx</div>
   </div>
-  <h1>Failure Acknowledgement</h1>
-  <p>Screen: user acknowledges a failed ACH payment.</p>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><span>mk</span></div>
+      <span class="brand-word">myKaarma</span>
+    </div>
+    <div class="whoami">
+      <div class="txt">
+        <div class="name" title="Dana Whitfield">Dana Whitfield</div>
+        <div class="org" title="Store Manager">Store Manager</div>
+      </div>
+      <div class="avatar" aria-hidden="true">DW</div>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ══ NEEDS ACKNOWLEDGEMENT ═══════════════════════════════════════ -->
+    <section class="card" id="s-failed">
+      <div class="scope">
+        <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+        <p class="dealer myk-h6" title="Northside Toyota">Northside Toyota</p>
+      </div>
+
+      <div class="banner">
+        <span class="material-symbols-outlined" aria-hidden="true">error</span>
+        <div class="btxt">
+          <p class="myk-h6">Payment returned by the customer's bank</p>
+          <p class="sub myk-body2">
+            This payment looked successful for three days before the bank sent it back. Acknowledge that you have
+            seen it so the store has a record.
+          </p>
+        </div>
+      </div>
+
+      <div class="dialog-section amount-block">
+        <p class="dialog-label myk-subtitle1">Pay by Bank (ACH)</p>
+        <div class="amount-row">
+          <p class="failed-amount">$2,184.60</p>
+          <span class="pill err">
+            <span class="material-symbols-outlined" aria-hidden="true">undo</span>
+            Returned
+          </span>
+          <span class="pill ok" id="pill-acked" hidden>
+            <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+            Acknowledged
+          </span>
+        </div>
+        <p class="amount-note myk-body2">
+          Not collected. Order <b>451067</b> is unpaid again.
+        </p>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="dialog-section">
+        <div class="info-grid">
+          <div class="info-column">
+            <p class="info-label myk-subtitle1">Customer</p>
+            <p class="info-value myk-body2" title="Alicia Brennan">Alicia Brennan</p>
+          </div>
+          <div class="info-column">
+            <p class="info-label myk-subtitle1">Bank account</p>
+            <p class="info-value myk-body2" title="Chase ending in 4417">Chase ····4417</p>
+          </div>
+          <div class="info-column">
+            <p class="info-label myk-subtitle1">Order number</p>
+            <p class="info-value myk-body2" title="Order 451067">451067</p>
+          </div>
+          <div class="info-column">
+            <p class="info-label myk-subtitle1">Department</p>
+            <p class="info-value myk-body2" title="Service">Service</p>
+          </div>
+          <div class="info-column">
+            <p class="info-label myk-subtitle1">Vehicle</p>
+            <p class="info-value myk-body2" title="2023 Toyota Highlander — VIN ending 6621">2023 Highlander ····6621</p>
+          </div>
+          <div class="info-column">
+            <p class="info-label myk-subtitle1">Taken by</p>
+            <p class="info-value myk-body2" title="Priya Raghunathan">Priya Raghunathan</p>
+          </div>
+          <div class="info-column">
+            <p class="info-label myk-subtitle1">Reference</p>
+            <p class="info-value ref myk-body2">
+              <span title="pi_3RbTnK7wQpMZ4a1D">pi_3RbTnK…</span>
+              <button class="copy-btn" type="button" aria-label="Copy full payment reference">
+                <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="dialog-section" style="display:flex; flex-direction:column; gap:10px;">
+        <p class="myk-overline" style="color: var(--text-secondary, #535862);">Why the bank returned it</p>
+        <div class="reason">
+          <p class="code">R01 — Insufficient funds</p>
+          <p class="myk-body2">
+            The account did not have enough money to cover the payment when the bank processed it. Ask the customer
+            to confirm funds are available before you try Pay by Bank again.
+          </p>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="dialog-section" style="display:flex; flex-direction:column; gap:12px;">
+        <p class="myk-overline" style="color: var(--text-secondary, #535862);">What happened</p>
+        <div class="timeline">
+          <div class="tl-row">
+            <div class="tl-rail"><span class="tl-dot" aria-hidden="true"></span><span class="tl-stem" aria-hidden="true"></span></div>
+            <div class="tl-body">
+              <p class="t myk-body2">Customer paid</p>
+              <p class="m myk-subtitle1">Sep 2, 2026 · 9:12 AM CDT — taken by Priya Raghunathan</p>
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-rail"><span class="tl-dot" aria-hidden="true"></span><span class="tl-stem" aria-hidden="true"></span></div>
+            <div class="tl-body">
+              <p class="t myk-body2">Sent to the bank</p>
+              <p class="m myk-subtitle1">Sep 2, 2026 · 8:00 PM CDT</p>
+            </div>
+          </div>
+          <div class="tl-row">
+            <div class="tl-rail"><span class="tl-dot err" aria-hidden="true"></span><span class="tl-stem" aria-hidden="true"></span></div>
+            <div class="tl-body">
+              <p class="t myk-body2">Returned by the bank</p>
+              <p class="m myk-subtitle1">Sep 5, 2026 · 6:04 AM CDT — <span class="gap">3 days after the customer paid</span></p>
+            </div>
+          </div>
+          <div class="tl-row" id="tl-pending">
+            <div class="tl-rail"><span class="tl-dot now" aria-hidden="true"></span></div>
+            <div class="tl-body">
+              <p class="t myk-body2">Waiting for someone at the store to acknowledge</p>
+              <p class="m myk-subtitle1">Email sent to 3 payment contacts on Sep 5, 2026 · 6:09 AM CDT</p>
+            </div>
+          </div>
+          <div class="tl-row" id="tl-acked" hidden>
+            <div class="tl-rail"><span class="tl-dot ok" aria-hidden="true"></span></div>
+            <div class="tl-body">
+              <p class="t myk-body2">Acknowledged by Priya Raghunathan</p>
+              <p class="m myk-subtitle1">Sep 5, 2026 · 7:02 AM CDT — other contacts can still acknowledge</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ack-roster" hidden>
+        <div class="section-divider"></div>
+        <div class="dialog-section" style="display:flex; flex-direction:column; gap:12px;">
+          <p class="myk-overline" style="color: var(--text-secondary, #535862);">Acknowledged by</p>
+          <div class="roster">
+            <div class="ack-person">
+              <div class="avatar" aria-hidden="true">PR</div>
+              <div class="ap">
+                <p class="t myk-body2">Priya Raghunathan</p>
+                <p class="m myk-subtitle1">Service Advisor · Sep 5, 2026 · 7:02 AM CDT</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="dialog-section guidance">
+        <div class="row">
+          <span class="material-symbols-outlined" aria-hidden="true">directions_car</span>
+          <p class="myk-body2"><b>If the vehicle has already left,</b> call the customer today. Returns arrive days
+            after the payment looked successful, so the car is often gone before you hear about it.</p>
+        </div>
+        <div class="row">
+          <span class="material-symbols-outlined" aria-hidden="true">credit_card</span>
+          <p class="myk-body2"><b>To collect again,</b> send a new payment request or take a card. Pay by Bank can be
+            retried once the customer confirms the funds are there.</p>
+        </div>
+      </div>
+
+      <div class="footstrip" id="strip-pending">
+        <span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>
+        <p class="myk-body2">If nobody acknowledges by <b>Sep 6, 2026 · 6:04 AM CDT</b>, we remind the Service
+          Manager, <b>Ravi Anand</b>.</p>
+      </div>
+
+      <div class="footstrip" id="strip-acked" hidden>
+        <span class="material-symbols-outlined" aria-hidden="true">notifications_off</span>
+        <p class="myk-body2">Reminders stopped when <b>Priya Raghunathan</b> acknowledged this. You can still add
+          your own acknowledgement below.</p>
+      </div>
+
+      <div class="dialog-actions">
+        <p class="ack-hint myk-subtitle1">
+          Acknowledging records that you saw this. It does not collect the payment.
+        </p>
+        <button class="mk-button primary-mk-button" id="btn-ack" type="button" onclick="submitAck()">
+          <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+          Acknowledge
+        </button>
+        <button class="mk-button primary-mk-button" id="btn-submitting" type="button" disabled hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          Acknowledging…
+        </button>
+      </div>
+    </section>
+
+    <!-- ══ ACKNOWLEDGED ════════════════════════════════════════════════ -->
+    <section class="card" id="s-acknowledged" hidden>
+      <div class="scope">
+        <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+        <p class="dealer myk-h6" title="Northside Toyota">Northside Toyota</p>
+      </div>
+
+      <div class="terminal">
+        <div class="icon-wrap" style="background: var(--badge-ok-bg, #ECFDF3); color: var(--badge-ok-fg, #027A48);">
+          <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+        </div>
+        <p class="myk-h3">Acknowledged</p>
+        <p class="sub myk-body2">Your acknowledgement is on the record. The payment is still uncollected, so order
+          451067 stays unpaid until you collect it another way.</p>
+        <div class="receipt">
+          <div class="r"><span>Amount returned</span><span>$2,184.60</span></div>
+          <div class="r"><span>Order number</span><span>451067</span></div>
+          <div class="r"><span>Reason</span><span>R01 — Insufficient funds</span></div>
+          <div class="r"><span>Order status</span><span style="color: var(--badge-err-fg, #B42318);">Unpaid</span></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="dialog-section" style="display:flex; flex-direction:column; gap:12px;">
+        <p class="myk-overline" style="color: var(--text-secondary, #535862);">Acknowledged by</p>
+        <div class="roster">
+          <div class="ack-person">
+            <div class="avatar" aria-hidden="true">PR</div>
+            <div class="ap">
+              <p class="t myk-body2">Priya Raghunathan</p>
+              <p class="m myk-subtitle1">Service Advisor · Sep 5, 2026 · 7:02 AM CDT</p>
+            </div>
+          </div>
+          <div class="ack-person">
+            <div class="avatar" aria-hidden="true">DW</div>
+            <div class="ap">
+              <p class="t myk-body2">Dana Whitfield <span class="you-tag">You</span></p>
+              <p class="m myk-subtitle1">Store Manager · Sep 5, 2026 · 8:31 AM CDT</p>
+            </div>
+          </div>
+        </div>
+        <p class="myk-subtitle1" style="color: var(--text-secondary, #535862);">
+          Ravi Anand has not acknowledged yet. Anyone on the notification list can still add theirs.
+        </p>
+      </div>
+    </section>
+
+    <!-- ══ LOADING SKELETON ════════════════════════════════════════════ -->
+    <section class="card" id="s-loading" hidden aria-busy="true" aria-label="Loading payment details">
+      <div class="scope">
+        <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+        <p class="dealer myk-h6" title="Northside Toyota">Northside Toyota</p>
+      </div>
+
+      <div class="dialog-section" style="display:flex; gap:12px; align-items:flex-start;">
+        <div class="skeleton" style="width:20px; height:20px; border-radius:50%; flex:0 0 auto;"></div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+          <div class="skeleton" style="width:58%; height:14px;"></div>
+          <div class="skeleton" style="width:90%; height:12px;"></div>
+        </div>
+      </div>
+      <div class="section-divider"></div>
+      <div class="dialog-section" style="display:flex; flex-direction:column; gap:10px;">
+        <div class="skeleton" style="width:96px; height:10px;"></div>
+        <div class="skeleton" style="width:186px; height:32px;"></div>
+        <div class="skeleton" style="width:210px; height:12px;"></div>
+      </div>
+      <div class="section-divider"></div>
+      <div class="dialog-section">
+        <div class="info-grid">
+          <div class="info-column"><div class="skeleton" style="width:70px; height:10px;"></div><div class="skeleton" style="width:126px; height:14px; margin-top:6px;"></div></div>
+          <div class="info-column"><div class="skeleton" style="width:82px; height:10px;"></div><div class="skeleton" style="width:112px; height:14px; margin-top:6px;"></div></div>
+          <div class="info-column"><div class="skeleton" style="width:96px; height:10px;"></div><div class="skeleton" style="width:96px;  height:14px; margin-top:6px;"></div></div>
+          <div class="info-column"><div class="skeleton" style="width:62px; height:10px;"></div><div class="skeleton" style="width:140px; height:14px; margin-top:6px;"></div></div>
+          <div class="info-column"><div class="skeleton" style="width:56px; height:10px;"></div><div class="skeleton" style="width:150px; height:14px; margin-top:6px;"></div></div>
+          <div class="info-column"><div class="skeleton" style="width:66px; height:10px;"></div><div class="skeleton" style="width:110px; height:14px; margin-top:6px;"></div></div>
+        </div>
+      </div>
+      <div class="section-divider"></div>
+      <div class="dialog-section" style="display:flex; flex-direction:column; gap:10px;">
+        <div class="skeleton" style="width:150px; height:10px;"></div>
+        <div class="skeleton" style="width:100%; height:64px; border-radius:6px;"></div>
+      </div>
+      <div class="section-divider"></div>
+      <div class="dialog-section" style="display:flex; flex-direction:column; gap:12px;">
+        <div class="skeleton" style="width:110px; height:10px;"></div>
+        <div class="skeleton" style="width:100%; height:96px; border-radius:6px;"></div>
+      </div>
+      <div class="dialog-actions">
+        <div class="skeleton" style="width:120px; height:48px; border-radius:8px;"></div>
+        <div class="skeleton" style="width:160px; height:48px; border-radius:8px;"></div>
+      </div>
+    </section>
+
+    <!-- ══ 403 — signed in as someone without access ═══════════════════ -->
+    <section class="card" id="s-forbidden" hidden>
+      <div class="terminal">
+        <div class="icon-wrap" style="background: var(--badge-warn-bg, #FFE0B6); color: var(--badge-warn-fg, #ED6D22);">
+          <span class="material-symbols-outlined" aria-hidden="true">lock_person</span>
+        </div>
+        <p class="myk-h3">This isn't your payment to acknowledge</p>
+        <p class="sub myk-body2">You're signed in as <b style="color: var(--text-primary, #1A1A2E);">dana.whitfield@northsidetoyota.com</b>.
+          That account doesn't have access to this payment, so we can't show you any of its details.</p>
+        <p class="sub myk-body2">If the link was forwarded to you, ask the person it was sent to acknowledge it from
+          their own account. If you should have access, your dealer admin can add you to the payment contacts.</p>
+      </div>
+    </section>
+
+    <!-- ══ 404 — no such transaction ═══════════════════════════════════ -->
+    <section class="card" id="s-notfound" hidden>
+      <div class="terminal">
+        <div class="icon-wrap" style="background: var(--bg-base-1, #FBFBFB); color: var(--text-secondary, #535862); border: 1px solid var(--border, #E9EAEB);">
+          <span class="material-symbols-outlined" aria-hidden="true">link_off</span>
+        </div>
+        <p class="myk-h3">We can't find this payment</p>
+        <p class="sub myk-body2">The link may be incomplete. Some email apps cut long links in half — open the
+          original email and copy the whole link into your browser.</p>
+        <p class="sub myk-body2">If the link is complete and this keeps happening, contact myKaarma support.</p>
+      </div>
+    </section>
+
+    <!-- ══ 5xx / timeout on load ═══════════════════════════════════════ -->
+    <section class="card" id="s-loaderror" hidden>
+      <div class="terminal">
+        <div class="icon-wrap" style="background: var(--badge-err-bg, #FEF3F2); color: var(--badge-err-fg, #B42318);">
+          <span class="material-symbols-outlined" aria-hidden="true">cloud_off</span>
+        </div>
+        <p class="myk-h3">We couldn't load this payment</p>
+        <p class="sub myk-body2">Something went wrong on our end. Nothing has changed — the payment and any
+          acknowledgements are exactly as they were.</p>
+      </div>
+      <div class="dialog-actions">
+        <button class="mk-button primary-mk-button" type="button" onclick="show('loading')">
+          <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+          Try again
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast-submitfail" role="alert" hidden>
+    <span class="material-symbols-outlined" aria-hidden="true">error</span>
+    <div class="tbody">
+      <p class="myk-body2">We couldn't record your acknowledgement. Nothing was saved.</p>
+      <button class="retry" type="button" onclick="submitAck()">Try again</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Forced to light mode for this pass regardless of OS preference — only an
+  // explicit prior dark toggle (once one exists) would flip this to dark.
+  (function initTheme() {
+    var stored = null;
+    try { stored = localStorage.getItem('mk-theme'); } catch (e) { /* storage unavailable */ }
+    document.getElementById('shell').className = stored === 'dark' ? 'dark' : 'light';
+  })();
+
+  // Each entry maps a state from the flow diagram onto one card plus the
+  // sub-elements that vary within it. 'ackedbyothers', 'submitting' and
+  // 'submitfailed' are all NeedsAck — same card, different conditions.
+  var VIEW = {
+    failed:        { card: 'failed' },
+    ackedbyothers: { card: 'failed', acked: true },
+    submitting:    { card: 'failed', submitting: true },
+    acknowledged:  { card: 'acknowledged' },
+    loading:       { card: 'loading' },
+    submitfailed:  { card: 'failed', toast: true },
+    forbidden:     { card: 'forbidden' },
+    notfound:      { card: 'notfound' },
+    loaderror:     { card: 'loaderror' }
+  };
+  var STATES = Object.keys(VIEW);
+  var CARDS = ['loading', 'failed', 'acknowledged', 'forbidden', 'notfound', 'loaderror'];
+
+  function show(name, chipEl) {
+    var v = VIEW[name];
+
+    CARDS.forEach(function (c) {
+      document.getElementById('s-' + c).hidden = (c !== v.card);
+    });
+
+    // NeedsAck sub-conditions.
+    ['pill-acked', 'tl-acked', 'ack-roster', 'strip-acked'].forEach(function (id) {
+      document.getElementById(id).hidden = !v.acked;
+    });
+    ['tl-pending', 'strip-pending'].forEach(function (id) {
+      document.getElementById(id).hidden = !!v.acked;
+    });
+
+    // A failed submit re-enables the button — the toast carries the error.
+    document.getElementById('btn-ack').hidden = !!v.submitting;
+    document.getElementById('btn-submitting').hidden = !v.submitting;
+    document.getElementById('toast-submitfail').hidden = !v.toast;
+
+    var chips = document.querySelectorAll('.switcher .chip');
+    for (var i = 0; i < chips.length; i++) { chips[i].classList.remove('active'); }
+    if (chipEl) {
+      chipEl.classList.add('active');
+    } else {
+      var idx = STATES.indexOf(name);
+      if (idx > -1 && chips[idx]) { chips[idx].classList.add('active'); }
+    }
+  }
+
+  // Acknowledge goes through Submitting so the flow reads end to end. The
+  // Submitting chip shows the same state without advancing.
+  function submitAck() {
+    show('submitting');
+    setTimeout(function () { show('acknowledged'); }, 900);
+  }
+</script>
+
 </body>
 </html>
