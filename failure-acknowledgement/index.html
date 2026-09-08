@@ -181,24 +181,6 @@
     overflow: hidden;
   }
 
-  /* ── Dealer scope strip ───────────────────────────────────────────────
-     Dealer name lives here, not in the info grid: a multi-dealer user needs
-     to know which store this belongs to, and a single-dealer user reads it
-     as ambient context rather than a redundant labelled field. */
-  .scope {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 24px;
-    background: var(--bg-base-1, #FBFBFB);
-    border-bottom: 1px solid var(--border, #E9EAEB);
-    color: var(--text-secondary, #535862);
-    min-width: 0;
-  }
-  .scope .material-symbols-outlined { font-size: 16px; flex: 0 0 auto; }
-  .scope .dealer {
-    color: var(--text-primary, #1A1A2E); font-weight: 700;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-
   /* ── Banner ───────────────────────────────────────────────────────────── */
   .banner {
     display: flex; gap: 12px; align-items: flex-start;
@@ -215,7 +197,7 @@
   .section-divider { height: 1px; background: var(--border, #E9EAEB); }
 
   /* ── Amount ───────────────────────────────────────────────────────────── */
-  .amount-block { display: flex; flex-direction: column; gap: 4px; padding-bottom: 0; }
+  .amount-block { display: flex; flex-direction: column; gap: 4px; }
   .dialog-label { color: var(--text-secondary, #535862); }
   .amount-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .failed-amount {
@@ -242,23 +224,6 @@
     color: var(--text-primary, #1A1A2E); font-weight: 700;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  /* ── Acknowledgement roster ───────────────────────────────────────────
-     Acknowledgement is per-person and the log stays open, so the screen has
-     to show who has already acknowledged without implying it is settled. */
-  .roster { display: flex; flex-direction: column; gap: 12px; }
-  .ack-person { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .ack-person .ap { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-  .ack-person .ap .t {
-    color: var(--text-primary, #1A1A2E); font-weight: 700;
-    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  }
-  .ack-person .ap .m { color: var(--text-secondary, #535862); font-variant-numeric: tabular-nums; }
-  .you-tag {
-    background: var(--badge-info-bg, #D3E4F1); color: var(--badge-info-fg, #0377B3);
-    font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 1px 6px; border-radius: 9px;
-  }
-
   .footstrip {
     display: flex; align-items: flex-start; gap: 8px;
     padding: 12px 24px;
@@ -466,49 +431,19 @@
 
     <!-- ══ ACKNOWLEDGED ════════════════════════════════════════════════ -->
     <section class="card" id="s-acknowledged" hidden>
-      <div class="scope">
-        <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
-        <p class="dealer myk-h6" title="Northside Toyota">Northside Toyota</p>
-      </div>
-
       <div class="terminal">
         <div class="icon-wrap" style="background: var(--badge-ok-bg, #ECFDF3); color: var(--badge-ok-fg, #027A48);">
           <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
         </div>
         <p class="myk-h3">Acknowledged</p>
-        <p class="sub myk-body2">Your acknowledgement is on the record. The payment is still uncollected, so order
-          451067 stays unpaid until you collect it another way.</p>
+        <p class="sub myk-body2">Your acknowledgement is on record. The payment is still uncollected — you'll need
+          to collect it another way.</p>
         <div class="receipt">
-          <div class="r"><span>Amount returned</span><span>$2,184.60</span></div>
+          <div class="r"><span>Amount</span><span>$2,184.60</span></div>
+          <div class="r"><span>Dealer Name</span><span>Northside Toyota</span></div>
           <div class="r"><span>Order number</span><span>451067</span></div>
           <div class="r"><span>Reason</span><span>R01 — Insufficient funds</span></div>
-          <div class="r"><span>Order status</span><span style="color: var(--badge-err-fg, #B42318);">Unpaid</span></div>
         </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <div class="dialog-section" style="display:flex; flex-direction:column; gap:12px;">
-        <p class="myk-overline" style="color: var(--text-secondary, #535862);">Acknowledged by</p>
-        <div class="roster">
-          <div class="ack-person">
-            <div class="avatar" aria-hidden="true">PR</div>
-            <div class="ap">
-              <p class="t myk-body2">Priya Raghunathan</p>
-              <p class="m myk-subtitle1">Service Advisor · Sep 5, 2026 · 7:02 AM CDT</p>
-            </div>
-          </div>
-          <div class="ack-person">
-            <div class="avatar" aria-hidden="true">DW</div>
-            <div class="ap">
-              <p class="t myk-body2">Dana Whitfield <span class="you-tag">You</span></p>
-              <p class="m myk-subtitle1">Store Manager · Sep 5, 2026 · 8:31 AM CDT</p>
-            </div>
-          </div>
-        </div>
-        <p class="myk-subtitle1" style="color: var(--text-secondary, #535862);">
-          Ravi Anand has not acknowledged yet. Anyone on the notification list can still add theirs.
-        </p>
       </div>
     </section>
 
