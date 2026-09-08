@@ -241,47 +241,6 @@
     color: var(--text-primary, #1A1A2E); font-weight: 700;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .info-value.ref { display: flex; align-items: center; gap: 6px; font-weight: 400; font-variant-numeric: tabular-nums; }
-  .copy-btn {
-    background: none; border: none; padding: 2px; cursor: pointer; border-radius: var(--radius-sm, 4px);
-    color: var(--text-secondary, #535862); display: inline-flex; align-items: center;
-  }
-  .copy-btn:hover { background: var(--row-hover, #F0F6FB); color: var(--brand, #0377B3); }
-  .copy-btn .material-symbols-outlined { font-size: 16px; }
-
-  /* ── Return reason ────────────────────────────────────────────────────── */
-  .reason {
-    background: var(--bg-base-1, #FBFBFB);
-    border: 1px solid var(--border, #E9EAEB);
-    border-radius: var(--radius-md, 6px); padding: 12px 14px;
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .reason .code {
-    color: var(--badge-err-fg, #B42318); font-weight: 700;
-    font-size: 0.875rem; letter-spacing: 0.02em;
-  }
-  .reason p { color: var(--text-primary, #1A1A2E); }
-
-  /* ── Timeline ─────────────────────────────────────────────────────────── */
-  .timeline { display: flex; flex-direction: column; }
-  .tl-row { display: flex; gap: 12px; padding-bottom: 14px; }
-  .tl-row:last-child { padding-bottom: 0; }
-  .tl-rail { flex: 0 0 10px; display: flex; flex-direction: column; align-items: center; }
-  .tl-dot {
-    width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; margin-top: 4px;
-    border: 2px solid var(--border, #E9EAEB);
-    background: var(--border, #E9EAEB);
-  }
-  .tl-dot.err { border-color: var(--badge-err-fg, #B42318); background: var(--badge-err-fg, #B42318); }
-  .tl-dot.ok  { border-color: var(--badge-ok-fg, #027A48);  background: var(--badge-ok-fg, #027A48); }
-  .tl-dot.now { border-color: var(--brand, #0377B3); background: var(--bg-card, #fff); }
-  .tl-stem { flex: 1 1 auto; width: 1px; background: var(--border, #E9EAEB); margin-top: 3px; min-height: 10px; }
-  .tl-row:last-child .tl-stem { display: none; }
-  .tl-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .tl-body .t { color: var(--text-primary, #1A1A2E); font-weight: 700; }
-  .tl-body .m { color: var(--text-secondary, #535862); font-variant-numeric: tabular-nums; }
-  .tl-body .gap { color: var(--badge-err-fg, #B42318); font-weight: 700; }
-
   /* ── Acknowledgement roster ───────────────────────────────────────────
      Acknowledgement is per-person and the log stays open, so the screen has
      to show who has already acknowledged without implying it is settled. */
@@ -491,12 +450,12 @@
       <div class="dialog-section">
         <div class="info-grid">
           <div class="info-column">
-            <p class="info-label myk-subtitle1">Customer</p>
-            <p class="info-value myk-body2" title="Alicia Brennan">Alicia Brennan</p>
+            <p class="info-label myk-subtitle1">Dealer Name</p>
+            <p class="info-value myk-body2" title="Northside Toyota">Northside Toyota</p>
           </div>
           <div class="info-column">
-            <p class="info-label myk-subtitle1">Bank account</p>
-            <p class="info-value myk-body2" title="Chase ending in 4417">Chase ····4417</p>
+            <p class="info-label myk-subtitle1">Customer</p>
+            <p class="info-value myk-body2" title="Alicia Brennan">Alicia Brennan</p>
           </div>
           <div class="info-column">
             <p class="info-label myk-subtitle1">Order number</p>
@@ -505,72 +464,6 @@
           <div class="info-column">
             <p class="info-label myk-subtitle1">Department</p>
             <p class="info-value myk-body2" title="Service">Service</p>
-          </div>
-          <div class="info-column">
-            <p class="info-label myk-subtitle1">Vehicle</p>
-            <p class="info-value myk-body2" title="2023 Toyota Highlander — VIN ending 6621">2023 Highlander ····6621</p>
-          </div>
-          <div class="info-column">
-            <p class="info-label myk-subtitle1">Taken by</p>
-            <p class="info-value myk-body2" title="Priya Raghunathan">Priya Raghunathan</p>
-          </div>
-          <div class="info-column">
-            <p class="info-label myk-subtitle1">Reference</p>
-            <p class="info-value ref myk-body2">
-              <span title="pi_3RbTnK7wQpMZ4a1D">pi_3RbTnK…</span>
-              <button class="copy-btn" type="button" aria-label="Copy full payment reference">
-                <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <div class="dialog-section" style="display:flex; flex-direction:column; gap:10px;">
-        <p class="myk-overline" style="color: var(--text-secondary, #535862);">Why the bank returned it</p>
-        <div class="reason">
-          <p class="code">R01 — Insufficient funds</p>
-          <p class="myk-body2">
-            The account did not have enough money to cover the payment when the bank processed it. Ask the customer
-            to confirm funds are available before you try Pay by Bank again.
-          </p>
-        </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <div class="dialog-section" style="display:flex; flex-direction:column; gap:12px;">
-        <p class="myk-overline" style="color: var(--text-secondary, #535862);">What happened</p>
-        <div class="timeline">
-          <div class="tl-row">
-            <div class="tl-rail"><span class="tl-dot" aria-hidden="true"></span><span class="tl-stem" aria-hidden="true"></span></div>
-            <div class="tl-body">
-              <p class="t myk-body2">Customer paid</p>
-              <p class="m myk-subtitle1">Sep 2, 2026 · 9:12 AM CDT — taken by Priya Raghunathan</p>
-            </div>
-          </div>
-          <div class="tl-row">
-            <div class="tl-rail"><span class="tl-dot" aria-hidden="true"></span><span class="tl-stem" aria-hidden="true"></span></div>
-            <div class="tl-body">
-              <p class="t myk-body2">Sent to the bank</p>
-              <p class="m myk-subtitle1">Sep 2, 2026 · 8:00 PM CDT</p>
-            </div>
-          </div>
-          <div class="tl-row">
-            <div class="tl-rail"><span class="tl-dot err" aria-hidden="true"></span><span class="tl-stem" aria-hidden="true"></span></div>
-            <div class="tl-body">
-              <p class="t myk-body2">Returned by the bank</p>
-              <p class="m myk-subtitle1">Sep 5, 2026 · 6:04 AM CDT — <span class="gap">3 days after the customer paid</span></p>
-            </div>
-          </div>
-          <div class="tl-row">
-            <div class="tl-rail"><span class="tl-dot now" aria-hidden="true"></span></div>
-            <div class="tl-body">
-              <p class="t myk-body2">Waiting for someone at the store to acknowledge</p>
-              <p class="m myk-subtitle1">Email sent to 3 payment contacts on Sep 5, 2026 · 6:09 AM CDT</p>
-            </div>
           </div>
         </div>
       </div>
@@ -594,6 +487,17 @@
         <span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>
         <p class="myk-body2">If nobody acknowledges by <b>Sep 6, 2026 · 6:04 AM CDT</b>, we remind the Service
           Manager, <b>Ravi Anand</b>.</p>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="mk-button primary-mk-button" id="btn-ack-bottom" type="button" onclick="submitAck()">
+          <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+          Acknowledge
+        </button>
+        <button class="mk-button primary-mk-button" id="btn-submitting-bottom" type="button" disabled hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          Acknowledging…
+        </button>
       </div>
     </section>
 
@@ -652,42 +556,29 @@
         <p class="dealer myk-h6" title="Northside Toyota">Northside Toyota</p>
       </div>
 
-      <div class="dialog-section" style="display:flex; gap:12px; align-items:flex-start;">
-        <div class="skeleton" style="width:20px; height:20px; border-radius:50%; flex:0 0 auto;"></div>
-        <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+      <div class="dialog-section" style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+        <div class="skeleton" style="width:24px; height:24px; border-radius:50%; flex:0 0 auto;"></div>
+        <div style="flex:1 1 240px; min-width:200px; display:flex; flex-direction:column; gap:8px;">
           <div class="skeleton" style="width:58%; height:14px;"></div>
           <div class="skeleton" style="width:90%; height:12px;"></div>
         </div>
+        <div class="skeleton" style="width:140px; height:48px; border-radius:8px; flex:0 0 auto;"></div>
       </div>
       <div class="section-divider"></div>
       <div class="dialog-section" style="display:flex; flex-direction:column; gap:10px;">
-        <div class="skeleton" style="width:96px; height:10px;"></div>
         <div class="skeleton" style="width:186px; height:32px;"></div>
-        <div class="skeleton" style="width:210px; height:12px;"></div>
       </div>
       <div class="section-divider"></div>
       <div class="dialog-section">
         <div class="info-grid">
-          <div class="info-column"><div class="skeleton" style="width:70px; height:10px;"></div><div class="skeleton" style="width:126px; height:14px; margin-top:6px;"></div></div>
-          <div class="info-column"><div class="skeleton" style="width:82px; height:10px;"></div><div class="skeleton" style="width:112px; height:14px; margin-top:6px;"></div></div>
+          <div class="info-column"><div class="skeleton" style="width:82px; height:10px;"></div><div class="skeleton" style="width:126px; height:14px; margin-top:6px;"></div></div>
+          <div class="info-column"><div class="skeleton" style="width:70px; height:10px;"></div><div class="skeleton" style="width:112px; height:14px; margin-top:6px;"></div></div>
           <div class="info-column"><div class="skeleton" style="width:96px; height:10px;"></div><div class="skeleton" style="width:96px;  height:14px; margin-top:6px;"></div></div>
-          <div class="info-column"><div class="skeleton" style="width:62px; height:10px;"></div><div class="skeleton" style="width:140px; height:14px; margin-top:6px;"></div></div>
-          <div class="info-column"><div class="skeleton" style="width:56px; height:10px;"></div><div class="skeleton" style="width:150px; height:14px; margin-top:6px;"></div></div>
-          <div class="info-column"><div class="skeleton" style="width:66px; height:10px;"></div><div class="skeleton" style="width:110px; height:14px; margin-top:6px;"></div></div>
+          <div class="info-column"><div class="skeleton" style="width:62px; height:10px;"></div><div class="skeleton" style="width:100px; height:14px; margin-top:6px;"></div></div>
         </div>
       </div>
       <div class="section-divider"></div>
-      <div class="dialog-section" style="display:flex; flex-direction:column; gap:10px;">
-        <div class="skeleton" style="width:150px; height:10px;"></div>
-        <div class="skeleton" style="width:100%; height:64px; border-radius:6px;"></div>
-      </div>
-      <div class="section-divider"></div>
-      <div class="dialog-section" style="display:flex; flex-direction:column; gap:12px;">
-        <div class="skeleton" style="width:110px; height:10px;"></div>
-        <div class="skeleton" style="width:100%; height:96px; border-radius:6px;"></div>
-      </div>
       <div class="dialog-actions">
-        <div class="skeleton" style="width:120px; height:48px; border-radius:8px;"></div>
         <div class="skeleton" style="width:160px; height:48px; border-radius:8px;"></div>
       </div>
     </section>
@@ -781,9 +672,14 @@
       document.getElementById('s-' + c).hidden = (c !== v.card);
     });
 
-    // A failed submit re-enables the button — the toast carries the error.
-    document.getElementById('btn-ack').hidden = !!v.submitting;
-    document.getElementById('btn-submitting').hidden = !v.submitting;
+    // A failed submit re-enables the buttons — the toast carries the error.
+    // Banner and bottom Acknowledge buttons mirror each other exactly.
+    ['btn-ack', 'btn-ack-bottom'].forEach(function (id) {
+      document.getElementById(id).hidden = !!v.submitting;
+    });
+    ['btn-submitting', 'btn-submitting-bottom'].forEach(function (id) {
+      document.getElementById(id).hidden = !v.submitting;
+    });
     document.getElementById('toast-submitfail').hidden = !v.toast;
 
     var chips = document.querySelectorAll('.switcher .chip');
